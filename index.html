@@ -2,50 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Location Tracker</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
   <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    body, html {
+      height: 100%;
       background: #111;
-      margin: 0;
+      color: white;
     }
-
-    .spinner {
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #3498db;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
     #doneMessage {
       display: none;
-      color: white;
-      font-family: sans-serif;
+    }
+    /* Spinner size and color */
+    .spinner-border {
+      width: 4rem;
+      height: 4rem;
+      color: #0d6efd; /* Bootstrap primary */
     }
   </style>
 </head>
 <body>
-  <div id="preloader" class="spinner"></div>
-  <h3 id="doneMessage">📍 Location sent successfully</h3>
+
+  <div class="container h-100 d-flex flex-column justify-content-center align-items-center">
+    <div id="preloader" class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <h3 id="doneMessage" class="mt-4 text-center">
+      📍 Location sent successfully
+    </h3>
+    <p class="text-center mt-3 text-muted" style="max-width: 320px;">
+      Your current location will be sent automatically to the configured email.
+    </p>
+  </div>
 
   <script>
-    // ✅ Initialize EmailJS
+    // Initialize EmailJS
     (function () {
       emailjs.init("LS0kSC-13YzzAE78w");
     })();
 
-    // ✅ Send location function
     function sendLocation(lat, lon) {
       const now = new Date().toLocaleString();
 
@@ -54,6 +55,8 @@
         longitude: lon,
         date_time: now
       };
+
+      console.log(`📍 Location fetched: Latitude = ${lat}, Longitude = ${lon}`);
 
       emailjs.send('service_dwxm5dp', 'template_omqnoz4', templateParams)
         .then(function (response) {
@@ -66,23 +69,35 @@
         });
     }
 
-    // ✅ Get geolocation
+    // Get geolocation and send location automatically
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         function (position) {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
+
+          console.log(`📍 Location fetched: Latitude = ${lat}, Longitude = ${lon}`);
+
           sendLocation(lat, lon);
         },
         function (error) {
           console.error("❌ Error getting location:", error.message);
-          document.getElementById('preloader').style.display = 'none';
+          const preloader = document.getElementById('preloader');
+          const doneMessage = document.getElementById('doneMessage');
+          preloader.style.display = 'none';
+          doneMessage.style.display = 'block';
+          doneMessage.textContent = "❌ Unable to get location permission.";
         }
       );
     } else {
       console.log("❌ Geolocation not supported.");
-      document.getElementById('preloader').style.display = 'none';
+      const preloader = document.getElementById('preloader');
+      const doneMessage = document.getElementById('doneMessage');
+      preloader.style.display = 'none';
+      doneMessage.style.display = 'block';
+      doneMessage.textContent = "❌ Geolocation not supported by this browser.";
     }
   </script>
+
 </body>
 </html>
